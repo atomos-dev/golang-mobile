@@ -304,7 +304,11 @@ func goCmd(subcmd string, srcs []string, env []string, args ...string) error {
 }
 
 func goCmdAt(at string, subcmd string, srcs []string, env []string, args ...string) error {
-	cmd := exec.Command("garble", "-debug", "-literals", "-tiny", "-seed=random", subcmd)
+	isUsingGarble, exists := os.LookupEnv("GARBLE")
+	cmd := exec.Command("go", subcmd)
+	if exists && isUsingGarble == "true" {
+		cmd = exec.Command("garble", "-debug", "-literals", "-tiny", "-seed=random", subcmd)
+	}
 	tags := buildTags
 	if len(tags) > 0 {
 		cmd.Args = append(cmd.Args, "-tags", strings.Join(tags, ","))
@@ -330,7 +334,6 @@ func goCmdAt(at string, subcmd string, srcs []string, env []string, args ...stri
 	if buildWork {
 		cmd.Args = append(cmd.Args, "-work")
 	}
-	// cmd.Args = append(cmd.Args, "-toolexec=garble")
 	cmd.Args = append(cmd.Args, args...)
 	cmd.Args = append(cmd.Args, srcs...)
 
